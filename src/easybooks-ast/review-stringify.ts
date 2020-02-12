@@ -49,6 +49,13 @@ const code = (tree: EBAST.Code, context: Context) => {
     return `//cmd{\n${tree.value}\n//}\n`
   }
 
+  if (tree.lang === 'plain') {
+    return `//list[${(tree.id || getId(context)).replace(
+      '}',
+      '\\}',
+    )}][${tree.caption || ''}]{\n${tree.value}\n//}\n`
+  }
+
   return `//listnum[${(tree.id || getId(context)).replace(
     '}',
     '\\}',

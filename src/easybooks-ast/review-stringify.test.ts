@@ -55,6 +55,11 @@ describe('code block', () => {
       '//cmd{\n$ hoge\n//}\n',
     )
   })
+  test('lang plain', async () => {
+    expect(await mdToReview('```plain\n$ hoge\n```\n')).toBe(
+      '//list[-000][]{\n$ hoge\n//}\n',
+    )
+  })
 
   test('caption', async () => {
     expect(
