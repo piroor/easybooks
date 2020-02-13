@@ -83,6 +83,9 @@ describe('list', () => {
     expect(await mdToReview('* hoge\n  \n  ```\n  list\n  ```\n* fuga')).toBe(
       ' * hoge\n//child[ul]\n//listnum[-000][]{\nlist\n//}\n//child[/ul]\n * fuga\n\n'
     )
+    expect(await mdToReview('* hoge\n  ![image](image.png)\n* fuga')).toBe(
+      ' * hoge\n//child[ul]\n//image[image][image]\n//child[/ul]\n * fuga\n\n'
+    )
   })
 })
 
@@ -92,6 +95,9 @@ describe('ordered list', () => {
     expect(await mdToReview('3. hoge\n4. fuga')).toBe(' 3. hoge\n 4. fuga\n\n')
     expect(await mdToReview('1. hoge\n  \n  ```\n  list\n  ```\n2. fuga')).toBe(
       ' 1. hoge\n//child[ol]\n//listnum[-000][]{\nlist\n//}\n//child[/ol]\n 2. fuga\n\n'
+    )
+    expect(await mdToReview('1. hoge\n  ![image](image.png)\n2. fuga')).toBe(
+      ' 1. hoge\n//child[ol]\n//image[image][image]\n//child[/ol]\n 2. fuga\n\n'
     )
   })
 })

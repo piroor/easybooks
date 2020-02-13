@@ -84,9 +84,11 @@ const list = (tree: EBAST.List, context: Context) => {
     list = list.replace(/^ \* /gm, () => ' ' + (count++) + '. ')
                .replace(/^(\/\/.+\{$)/gm, '//child[ol]\n$1')
                .replace(/^(\/\/}$)/gm, '$1\n//child[/ol]')
+               .replace(/^(\/\/image.+[^{}]$)/gm, '//child[ol]\n$1\n//child[/ol]')
   } else {
     list = list.replace(/^(\/\/.+\{$)/gm, '//child[ul]\n$1')
                .replace(/^(\/\/}$)/gm, '$1\n//child[/ul]')
+               .replace(/^(\/\/image.+[^{}]$)/gm, '//child[ul]\n$1\n//child[/ul]')
   }
   return list
 }
