@@ -76,12 +76,17 @@ const linkReference = (tree: EBAST.LinkReference, context: Context) => {
 }
 
 const list = (tree: EBAST.List, context: Context) => {
-  const list = tree.children
+  let list = tree.children
       .map(child => compiler(child, { ...context, list: context.list + 1 }))
       .join('') + '\n'
   if (tree.ordered) {
     let count = Number(tree.start)
-    return list.replace(/^ \* /gm, () => ' ' + (count++) + '. ')
+    list = list.replace(/^ \* /gm, () => ' ' + (count++) + '. ')
+               .replace(/^(\/\/.+\{$)/gm, '//child[ol]\n$1')
+               .replace(/^(\/\/}$)/gm, '$1\n//child[/ol]')
+  } else {
+    list = list.replace(/^(\/\/.+\{$)/gm, '//child[ul]\n$1')
+               .replace(/^(\/\/}$)/gm, '$1\n//child[/ul]')
   }
   return list
 }
