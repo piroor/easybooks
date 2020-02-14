@@ -84,6 +84,7 @@ const list = (tree: EBAST.List, context: Context) => {
         ordered: tree.ordered,
         index:   index + 1
       }))
+      .join('') + '\n'
   )
 }
 
