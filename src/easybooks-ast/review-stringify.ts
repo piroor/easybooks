@@ -76,28 +76,32 @@ const linkReference = (tree: EBAST.LinkReference, context: Context) => {
 }
 
 const list = (tree: EBAST.List, context: Context) => {
-  let list = tree.children
-      .map(child => compiler(child, { ...context, list: context.list + 1 }))
-      .join('') + '\n'
-  if (tree.ordered) {
-    let count = Number(tree.start)
-    list = list.replace(/^ \* /gm, () => ' ' + (count++) + '. ')
-               .replace(/^(\/\/.+\{$)/gm, '//child[ol]\n$1')
-               .replace(/^(\/\/}$)/gm, '$1\n//child[/ol]')
-               .replace(/^(\/\/image.+[^{}]$)/gm, '//child[ol]\n$1\n//child[/ol]')
-  } else {
-    list = list.replace(/^(\/\/.+\{$)/gm, '//child[ul]\n$1')
-               .replace(/^(\/\/}$)/gm, '$1\n//child[/ul]')
-               .replace(/^(\/\/image.+[^{}]$)/gm, '//child[ul]\n$1\n//child[/ul]')
-  }
-  return list
+  return (
+    tree.children
+      .map((child, index) => compiler(child, {
+        ...context,
+        list:    context.list + 1,
+        ordered: tree.ordered,
+        index:   index + 1
+      }))
+  )
 }
 
 const listItem = (tree: EBAST.ListItem, context: Context) => {
-  return ` ${'*'.repeat(context.list)} ${tree.children
+  const children = tree.children
     .map(child => compiler(child, context))
     .join('')
-    .trim()}\n`
+    .trim()
+    .split('\n')
+  const content = children.length > 1 ? children.slice(1).join('\n') : ''
+  if (/^\s*\/\//m.test(content)) {
+    const bullet = context.ordered ? `${context.index}.` : '*'
+    const tag = context.ordered ? 'ol' : 'ul'
+    return ` ${bullet} ${children[0]}\n//child[${tag}]\n${content}\n//child[/${tag}]\n`
+  } else {
+    const bullet = context.ordered ? `${context.index}.` : '*'.repeat(context.list)
+    return ` ${bullet} ${children.join('\n')}\n`
+  }
 }
 
 const ignore = (tree: any, context: Context) => ''
