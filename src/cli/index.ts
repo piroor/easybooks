@@ -1,20 +1,26 @@
 import path from 'path'
 
-import { buildBookFromDisk } from '../'
-import { readConfig } from '../adapters/review/config'
+import { createEasyBooksBuilderLocal, readConfig } from '../services'
 import { Presentation } from '../ports/presentation'
 
 const cli = async (args: any) => {
   const pres: Presentation = {
     progress: state => console.log(state),
     info: message => console.log(message),
-    warn: msg => console.log(JSON.stringify(msg)),
-    error: msg => console.log(JSON.stringify(msg)),
+    warn: msg =>
+      console.log(`warn: ${msg.file}:${msg.line}: ${msg.message}`),
+    error: msg =>
+      console.log(`error: ${msg.file}:${msg.line}: ${msg.message}`),
   }
 
   try {
     const config = await readConfig(args._[0])
-    buildBookFromDisk(config, path.dirname(args._[0]), pres)
+    const { buildPdf } = await createEasyBooksBuilderLocal(
+      config,
+      path.dirname(args._[0]),
+      pres,
+    )
+    await buildPdf()
   } catch (e) {
     console.error(e)
   }

@@ -1,35 +1,17 @@
 import childProcess from 'child_process'
 import path from 'path'
 
-import { ReportMessage, Presentation } from '../../ports/presentation'
+import { Presentation } from '../../ports/presentation'
 import {
   BuildBookPorts,
   BuildBookPortsFactory,
-  Config,
 } from '../../ports/build-book'
-import { ProjectFilesPort } from '../../ports/project-files'
 import { writeYaml, createCatalog, copyTemplates } from './tasks'
 import { preparingConfig } from './config'
 
-const reError = /^WARN: review-pdfmaker: (.*\.re):([0-9]+): error: (.+)$/
+import { parseReviewMessage, parseTeXMessage } from './parse-message'
 
-export const parseReviewMessage = (s: string) => {
-  return s
-    .split('\n')
-    .map(line => {
-      const matched = reError.exec(line)
-      if (!matched) {
-        return null
-      } else {
-        return {
-          file: matched[1],
-          line: Number.parseInt(matched[2]),
-          message: matched[3],
-        }
-      }
-    })
-    .filter(v => v !== null) as ReportMessage[]
-}
+const reReVIEWError = /^ERROR: review-[a-z]+: failed to run command/m
 
 export const buildPdfByReview = (pres: Presentation, reviewDir: string) => {
   return new Promise<void>((resolve, reject) => {
@@ -40,13 +22,22 @@ export const buildPdfByReview = (pres: Presentation, reviewDir: string) => {
         cwd: reviewDir,
       })
       .on('close', code => {
-        const reports = parseReviewMessage(data)
-        reports.forEach(report => pres.error(report))
+        const texReport = parseTeXMessage(data)
+        texReport.forEach(report => pres.error(report))
 
-        if (reports.length === 0) {
-          resolve()
+        if (reReVIEWError.test(data)) {
+          pres.progress('failed')
+          reject('\n\n\n' + data)
         } else {
-          reject(data)
+          const reports = parseReviewMessage(data)
+          reports.forEach(report => pres.error(report))
+
+          if (reports.length === 0) {
+            pres.progress('done')
+            resolve()
+          } else {
+            reject('\n\n\n' + data)
+          }
         }
       })
       .on('error', err => {

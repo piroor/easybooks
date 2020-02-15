@@ -1,3 +1,5 @@
+import path from 'path'
+
 import * as EBAST from './ebast'
 import { parseMeta } from './md-to-eb'
 
@@ -146,10 +148,21 @@ const comment = (tree: EBAST.Comment, context: Context) => {
 }
 
 const image = (tree: EBAST.Image, context: Context) => {
-  const url = tree.url
-    .replace(/^images\//, '')
-    .replace(/\.[a-zA-Z0-9]+$/, '')
-  return `//image[${url}]${ tree.alt ? `[${tree.alt}]` : ''}\n`
+  const matched = /^[^?]+\?(scale=[0-9.]+)$/.exec(tree.url)
+
+  const url = path.basename(
+    tree.url
+      .replace(/\?(scale=[0-9.]+)$/, '')
+      .replace(/\.[a-zA-Z0-9]+$/, ''),
+  )
+
+  if (matched) {
+    return `//image[${url}][${tree.alt || ''}][${matched[1]}]`
+  } else if (tree.alt) {
+    return `//image[${url}][${tree.alt}]`
+  } else {
+    return `//image[${url}]`
+  }
 }
 
 const TableAlign = {

@@ -159,13 +159,11 @@ describe('strong', () => {
 describe('image', () => {
   test('', () => {
     expect(mdToReview('![fuga](hoge.png)')).resolves.toBe(
-      '\n//image[hoge][fuga]\n\n',
+      '\n//image[hoge][fuga]\n',
     )
   })
   test('no alt', () => {
-    expect(mdToReview('![](piyo.png)')).resolves.toBe(
-      '\n//image[piyo]\n\n',
-    )
+    expect(mdToReview('![](piyo.png)')).resolves.toBe('\n//image[piyo]\n')
   })
 })
 
@@ -255,6 +253,32 @@ describe('div', () => {
   test('div className => re:view block', () => {
     expect(mdToReview('<div class="flushright">ほげ</div>')).resolves.toBe(
       ['//flushright{', 'ほげ', '//}', ''].join('\n'),
+    )
+  })
+})
+
+describe('image', () => {
+  test('minimum', () => {
+    expect(mdToReview('![ほげ](hoge.jpg)')).resolves.toBe(
+      '\n//image[hoge][ほげ]\n',
+    )
+  })
+
+  test('with images/', () => {
+    expect(mdToReview('![ほげ](images/hoge.png)')).resolves.toBe(
+      '\n//image[hoge][ほげ]\n',
+    )
+  })
+
+  test('with images/chapter', () => {
+    expect(mdToReview('![ほげ](images/chapter/hoge.png)')).resolves.toBe(
+      '\n//image[hoge][ほげ]\n',
+    )
+  })
+
+  test('with scale', () => {
+    expect(mdToReview('![ほげ](images/hoge.png?scale=0.5)')).resolves.toBe(
+      '\n//image[hoge][ほげ][scale=0.5]\n',
     )
   })
 })
