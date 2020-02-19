@@ -44,6 +44,10 @@ const inlineCode = (tree: EBAST.InlineCode) => {
   return `@<code>{${tree.value.replace('}', '\\}')}}`
 }
 
+const ruby = (tree: EBAST.Ruby) => {
+  return `@<ruby>{${tree.base}, ${tree.text}}`
+}
+
 const breakNode = () => {
   return `\n`
 }
@@ -256,6 +260,7 @@ const compilers = {
   blockquote,
   text,
   inlineCode,
+  ruby,
   break: breakNode,
   code,
   link,
